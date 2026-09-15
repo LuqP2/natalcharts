@@ -20,7 +20,7 @@ export function normalizeDegrees(value: number): number {
 }
 
 export function displayAngle(longitude: number, ascendant: number): number {
-  return normalizeDegrees(180 + normalizeDegrees(longitude - ascendant));
+  return normalizeDegrees(180 - normalizeDegrees(longitude - ascendant));
 }
 
 export function pointOnCircle(

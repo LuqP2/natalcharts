@@ -16,6 +16,10 @@ describe("geometria da mandala", () => {
     expect(displayAngle(123.4, 123.4)).toBeCloseTo(180, 10);
   });
 
+  it("faz as longitudes avançarem abaixo do Ascendente", () => {
+    expect(displayAngle(153.4, 123.4)).toBeCloseTo(150, 10);
+  });
+
   it("calcula o ponto médio atravessando 360 graus", () => {
     expect(clockwiseMidpoint(350, 10)).toBeCloseTo(0, 10);
   });

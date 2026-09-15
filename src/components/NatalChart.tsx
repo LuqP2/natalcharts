@@ -47,13 +47,13 @@ function annularSector(
   const endOuter = pointOnCircle(endAngle, outerRadius);
   const endInner = pointOnCircle(endAngle, innerRadius);
   const startInner = pointOnCircle(startAngle, innerRadius);
-  const sweep = normalizeDegrees(endAngle - startAngle);
+  const sweep = normalizeDegrees(startAngle - endAngle);
   const largeArc = sweep > 180 ? 1 : 0;
   return [
     `M ${startOuter.x} ${startOuter.y}`,
-    `A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${endOuter.x} ${endOuter.y}`,
+    `A ${outerRadius} ${outerRadius} 0 ${largeArc} 0 ${endOuter.x} ${endOuter.y}`,
     `L ${endInner.x} ${endInner.y}`,
-    `A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${startInner.x} ${startInner.y}`,
+    `A ${innerRadius} ${innerRadius} 0 ${largeArc} 1 ${startInner.x} ${startInner.y}`,
     "Z",
   ].join(" ");
 }
