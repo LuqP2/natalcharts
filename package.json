@@ -5,6 +5,7 @@
   "type": "module",
   "license": "AGPL-3.0-or-later",
   "scripts": {
+    "assets:optimize": "node scripts/optimize-visual-assets.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

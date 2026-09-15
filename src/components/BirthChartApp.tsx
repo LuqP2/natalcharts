@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveBirthTime } from "@/lib/birth-time";
+import {
+  CHART_TEMPLATES,
+  type ChartTemplateId,
+} from "@/lib/chart-templates";
 import { listCountries, searchCities, type CountryOption } from "@/lib/cities";
 import type {
   BirthInput,
@@ -95,6 +99,8 @@ export function BirthChartApp() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState("");
   const [chart, setChart] = useState<ChartData | null>(null);
+  const [chartTemplate, setChartTemplate] =
+    useState<ChartTemplateId>("obsidian-gold");
   const [ambiguous, setAmbiguous] = useState<AmbiguousBirthTime | null>(null);
 
   const maxDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -458,12 +464,36 @@ export function BirthChartApp() {
                   <h2>{chart.place.name}</h2>
                 </div>
               </div>
+              <div className="template-picker" role="group" aria-label="Estilo da mandala">
+                <span className="template-picker-label">Template</span>
+                <div className="template-options">
+                  {CHART_TEMPLATES.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      className={chartTemplate === template.id ? "is-selected" : ""}
+                      aria-pressed={chartTemplate === template.id}
+                      onClick={() => setChartTemplate(template.id)}
+                    >
+                      <span
+                        className="template-swatch"
+                        style={{ backgroundImage: `url(${template.backgroundImage})` }}
+                        aria-hidden="true"
+                      />
+                      <span>
+                        <strong>{template.label}</strong>
+                        <small>{template.description}</small>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               {chart.warnings.map((warning) => (
                 <p className="chart-warning" key={`${warning.code}-${warning.message}`}>
                   {warning.message}
                 </p>
               ))}
-              <NatalChart chart={chart} />
+              <NatalChart chart={chart} templateId={chartTemplate} />
             </>
           ) : (
             <div className="empty-chart">

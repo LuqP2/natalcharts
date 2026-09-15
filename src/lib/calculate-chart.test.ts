@@ -114,6 +114,22 @@ describe("adaptador do mapa natal", () => {
     expect(markup).toContain("zodiac-sector");
     expect(markup).toContain("planet-symbol");
     expect(markup).toContain("aspect-line");
+    expect(markup).toContain("/assets/templates/obsidian-gold.webp");
+    expect(markup).toContain("/assets/zodiac/gilded-relief-web/aries.webp");
+    expect(markup).toContain("/assets/planets/gilded-medallions-web/sun.webp");
     expect(markup).not.toContain("NaN");
+  });
+
+  it("permite trocar apenas a base visual sem recalcular o mapa", () => {
+    const chart = calculateChartWithEngine(
+      engine,
+      greenwichInput,
+      "2000-01-01T12:00:00Z",
+    );
+    const markup = renderToStaticMarkup(
+      createElement(NatalChart, { chart, templateId: "ivory-gold" }),
+    );
+    expect(markup).toContain("/assets/templates/ivory-gold.webp");
+    expect(markup).toContain("/assets/planets/gilded-medallions-web/moon.webp");
   });
 });

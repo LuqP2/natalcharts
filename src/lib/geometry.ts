@@ -50,14 +50,14 @@ export function layoutPlanetLabels(
 ): PlanetLabelLayout[] {
   const placed: PlanetLabelLayout[] = [];
   const candidates = [
-    { radius: 306, offset: 0 },
-    { radius: 274, offset: 0 },
-    { radius: 306, offset: -4 },
-    { radius: 274, offset: 4 },
-    { radius: 306, offset: 8 },
-    { radius: 274, offset: -8 },
-    { radius: 306, offset: -12 },
-    { radius: 274, offset: 12 },
+    { radius: 315, offset: 0 },
+    { radius: 262, offset: 0 },
+    { radius: 315, offset: -5 },
+    { radius: 262, offset: 5 },
+    { radius: 315, offset: 10 },
+    { radius: 262, offset: -10 },
+    { radius: 315, offset: -15 },
+    { radius: 262, offset: 15 },
   ];
 
   const sorted = bodies
@@ -70,7 +70,7 @@ export function layoutPlanetLabels(
     for (const candidate of candidates) {
       const labelAngle = normalizeDegrees(body.trueAngle + candidate.offset);
       const point = pointOnCircle(labelAngle, candidate.radius);
-      if (placed.every((other) => distance(point, other.point) >= 40)) {
+      if (placed.every((other) => distance(point, other.point) >= 58)) {
         selected = {
           ...body,
           labelAngle,
@@ -85,10 +85,10 @@ export function layoutPlanetLabels(
       selected ?? {
         ...body,
         labelAngle: body.trueAngle,
-        radius: placed.length % 2 === 0 ? 306 : 274,
+        radius: placed.length % 2 === 0 ? 315 : 262,
         point: pointOnCircle(
           body.trueAngle,
-          placed.length % 2 === 0 ? 306 : 274,
+          placed.length % 2 === 0 ? 315 : 262,
         ),
       },
     );

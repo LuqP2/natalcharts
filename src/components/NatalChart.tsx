@@ -5,36 +5,32 @@ import {
   normalizeDegrees,
   pointOnCircle,
 } from "@/lib/geometry";
+import {
+  getChartTemplate,
+  publicAsset,
+  type ChartTemplateId,
+} from "@/lib/chart-templates";
 import type { AspectKind, ChartData } from "@/lib/types";
+import type { CSSProperties } from "react";
 
 const SIGNS = [
-  { name: "Áries", symbol: "♈", element: "fire" },
-  { name: "Touro", symbol: "♉", element: "earth" },
-  { name: "Gêmeos", symbol: "♊", element: "air" },
-  { name: "Câncer", symbol: "♋", element: "water" },
-  { name: "Leão", symbol: "♌", element: "fire" },
-  { name: "Virgem", symbol: "♍", element: "earth" },
-  { name: "Libra", symbol: "♎", element: "air" },
-  { name: "Escorpião", symbol: "♏", element: "water" },
-  { name: "Sagitário", symbol: "♐", element: "fire" },
-  { name: "Capricórnio", symbol: "♑", element: "earth" },
-  { name: "Aquário", symbol: "♒", element: "air" },
-  { name: "Peixes", symbol: "♓", element: "water" },
+  { id: "aries", name: "Áries" },
+  { id: "taurus", name: "Touro" },
+  { id: "gemini", name: "Gêmeos" },
+  { id: "cancer", name: "Câncer" },
+  { id: "leo", name: "Leão" },
+  { id: "virgo", name: "Virgem" },
+  { id: "libra", name: "Libra" },
+  { id: "scorpio", name: "Escorpião" },
+  { id: "sagittarius", name: "Sagitário" },
+  { id: "capricorn", name: "Capricórnio" },
+  { id: "aquarius", name: "Aquário" },
+  { id: "pisces", name: "Peixes" },
 ] as const;
 
-const ELEMENT_FILL = {
-  fire: "#ead3bd",
-  earth: "#d8dcc6",
-  air: "#d9e2e3",
-  water: "#cedce3",
-};
-
-const ASPECT_STYLE: Record<AspectKind, { color: string; dash?: string }> = {
-  conjunction: { color: "#91754f", dash: "3 7" },
-  sextile: { color: "#668177", dash: "6 5" },
-  square: { color: "#b0645d" },
-  trine: { color: "#587d75" },
-  opposition: { color: "#a94f4a" },
+const ASPECT_DASH: Partial<Record<AspectKind, string>> = {
+  conjunction: "3 7",
+  sextile: "6 5",
 };
 
 function annularSector(
@@ -64,16 +60,41 @@ function formatDegree(value: number): string {
   return `${degrees}°${String(minutes).padStart(2, "0")}′`;
 }
 
-export function NatalChart({ chart }: { chart: ChartData }) {
+export function NatalChart({
+  chart,
+  templateId = "obsidian-gold",
+}: {
+  chart: ChartData;
+  templateId?: ChartTemplateId;
+}) {
+  const template = getChartTemplate(templateId);
   const ascendant = chart.angles.ascendant;
   const byId = new Map(chart.bodies.map((body) => [body.id, body]));
   const labels = layoutPlanetLabels(chart.bodies, ascendant);
+  const chartStyle = {
+    "--chart-gold": template.palette.gold,
+    "--chart-gold-highlight": template.palette.goldHighlight,
+    "--chart-shadow": template.palette.shadow,
+    "--chart-text": template.palette.text,
+    "--chart-muted-text": template.palette.mutedText,
+  } as CSSProperties;
+
+  const aspectColor = (kind: AspectKind) => {
+    if (kind === "square" || kind === "opposition") {
+      return template.palette.tenseAspect;
+    }
+    if (kind === "trine" || kind === "sextile") {
+      return template.palette.harmoniousAspect;
+    }
+    return template.palette.neutralAspect;
+  };
 
   return (
-    <figure className="chart-figure">
+    <figure className="chart-figure" data-template={template.id}>
       <svg
         className="natal-chart"
         viewBox="0 0 1000 1000"
+        style={chartStyle}
         role="img"
         aria-labelledby="chart-title chart-description"
       >
@@ -83,7 +104,30 @@ export function NatalChart({ chart }: { chart: ChartData }) {
           Meio do Céu e aspectos maiores.
         </desc>
 
-        <circle cx="500" cy="500" r="462" className="chart-paper" />
+        <defs>
+          <linearGradient id="dynamic-gold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor={template.palette.goldHighlight} />
+            <stop offset="0.48" stopColor={template.palette.gold} />
+            <stop offset="1" stopColor={template.palette.goldHighlight} />
+          </linearGradient>
+          <filter id="line-relief" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1.2" stdDeviation="1" floodColor={template.palette.shadow} floodOpacity="0.9" />
+          </filter>
+          <filter id="icon-relief" x="-25%" y="-25%" width="150%" height="150%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2.2" floodColor={template.palette.shadow} floodOpacity="0.75" />
+          </filter>
+        </defs>
+
+        <image
+          href={template.backgroundImage}
+          x="0"
+          y="0"
+          width="1000"
+          height="1000"
+          preserveAspectRatio="xMidYMid slice"
+          className="template-background"
+          aria-hidden="true"
+        />
 
         {SIGNS.map((sign, index) => {
           const start = displayAngle(index * 30, ascendant);
@@ -92,21 +136,13 @@ export function NatalChart({ chart }: { chart: ChartData }) {
             <path
               key={sign.name}
               d={annularSector(start, end, 356, 440)}
-              fill={ELEMENT_FILL[sign.element]}
+              fill="transparent"
               className="zodiac-sector"
             />
           );
         })}
 
-        {[440, 356, 238].map((radius) => (
-          <circle
-            key={radius}
-            cx="500"
-            cy="500"
-            r={radius}
-            className="ring-line"
-          />
-        ))}
+        <circle cx="500" cy="500" r="238" className="ring-line" />
 
         {SIGNS.map((sign, index) => {
           const boundary = pointOnCircle(displayAngle(index * 30, ascendant), 440);
@@ -127,15 +163,17 @@ export function NatalChart({ chart }: { chart: ChartData }) {
                 y2={boundary.y}
                 className="zodiac-boundary"
               />
-              <text
-                x={label.x}
-                y={label.y}
-                className="zodiac-symbol symbol-font"
-                dominantBaseline="central"
-                textAnchor="middle"
-              >
-                {sign.symbol}
-              </text>
+              <image
+                href={publicAsset(`/assets/zodiac/gilded-relief-web/${sign.id}.webp`)}
+                x={label.x - 43}
+                y={label.y - 43}
+                width="86"
+                height="86"
+                preserveAspectRatio="xMidYMid meet"
+                className="zodiac-symbol zodiac-emblem"
+                filter="url(#icon-relief)"
+              />
+              <title>{sign.name}</title>
             </g>
           );
         })}
@@ -187,7 +225,6 @@ export function NatalChart({ chart }: { chart: ChartData }) {
             displayAngle(to.longitude, ascendant),
             222,
           );
-          const style = ASPECT_STYLE[aspect.kind];
           return (
             <line
               key={`${aspect.from}-${aspect.to}-${index}`}
@@ -195,8 +232,8 @@ export function NatalChart({ chart }: { chart: ChartData }) {
               y1={fromPoint.y}
               x2={toPoint.x}
               y2={toPoint.y}
-              stroke={style.color}
-              strokeDasharray={style.dash}
+              stroke={aspectColor(aspect.kind)}
+              strokeDasharray={ASPECT_DASH[aspect.kind]}
               className="aspect-line"
             >
               <title>
@@ -214,7 +251,7 @@ export function NatalChart({ chart }: { chart: ChartData }) {
           if (!body) return null;
           const tickInner = pointOnCircle(layout.trueAngle, 322);
           const tickOuter = pointOnCircle(layout.trueAngle, 350);
-          const leaderEnd = pointOnCircle(layout.labelAngle, layout.radius - 19);
+          const leaderEnd = pointOnCircle(layout.labelAngle, layout.radius - 29);
           return (
             <g key={body.id}>
               <line
@@ -231,22 +268,23 @@ export function NatalChart({ chart }: { chart: ChartData }) {
                 y2={leaderEnd.y}
                 className="planet-leader"
               />
+              <image
+                href={publicAsset(`/assets/planets/gilded-medallions-web/${body.id}.webp`)}
+                x={layout.point.x - 28}
+                y={layout.point.y - 28}
+                width="56"
+                height="56"
+                preserveAspectRatio="xMidYMid meet"
+                className="planet-symbol planet-medallion"
+                filter="url(#icon-relief)"
+              />
+              <title>
+                {body.label}: {SIGNS[body.signIndex].name} {formatDegree(body.degreeInSign)}
+                {body.retrograde ? ", retrógrado" : ""}
+              </title>
               <text
                 x={layout.point.x}
-                y={layout.point.y - 4}
-                className="planet-symbol symbol-font"
-                dominantBaseline="central"
-                textAnchor="middle"
-              >
-                {body.symbol}
-                <title>
-                  {body.label}: {SIGNS[body.signIndex].name} {formatDegree(body.degreeInSign)}
-                  {body.retrograde ? ", retrógrado" : ""}
-                </title>
-              </text>
-              <text
-                x={layout.point.x}
-                y={layout.point.y + 17}
+                y={layout.point.y + 38}
                 className="planet-degree"
                 dominantBaseline="central"
                 textAnchor="middle"
@@ -281,6 +319,7 @@ export function NatalChart({ chart }: { chart: ChartData }) {
       </svg>
 
       <figcaption>
+        {template.label} · {" "}
         {chart.place.name}
         {chart.place.subdivision ? `, ${chart.place.subdivision}` : ""} · zodíaco
         tropical · casas {chart.warnings.some((warning) => warning.code === "polar-house-substitution") ? "Porphyry" : "Placidus"}
