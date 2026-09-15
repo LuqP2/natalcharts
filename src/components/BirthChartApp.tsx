@@ -247,22 +247,12 @@ export function BirthChartApp() {
 
   return (
     <main className="page-shell">
-      <header className="masthead">
-        <p className="eyebrow">Mandala natal</p>
-        <h1>O céu no instante em que você nasceu.</h1>
-        <p className="intro">
-          Informe seus dados de nascimento para gerar uma mandala tropical completa.
-          O cálculo acontece somente neste navegador.
-        </p>
-      </header>
-
       <section className={`workspace ${chart ? "has-chart" : ""}`}>
         <form className="birth-form" onSubmit={submit} noValidate>
           <div className="form-heading">
             <span>01</span>
             <div>
               <h2>Dados de nascimento</h2>
-              <p>A hora exata é necessária para calcular casas e Ascendente.</p>
             </div>
           </div>
 
@@ -449,9 +439,6 @@ export function BirthChartApp() {
             {isCalculating ? "Calculando o céu…" : "Gerar minha mandala"}
           </button>
 
-          <p className="privacy-note">
-            Seus dados não são enviados nem salvos. A mandala é calculada localmente.
-          </p>
         </form>
 
         <section className="chart-stage" aria-live="polite">
@@ -500,8 +487,6 @@ export function BirthChartApp() {
               <div className="empty-orbit" aria-hidden="true">
                 <span>✦</span>
               </div>
-              <p>Sua mandala aparecerá aqui.</p>
-              <span>Preencha os dados ao lado para reconstruir o céu do nascimento.</span>
             </div>
           )}
         </section>
